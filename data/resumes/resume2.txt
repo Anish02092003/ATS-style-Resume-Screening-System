@@ -1,0 +1,2 @@
+I am a frontend developer with experience in HTML, CSS, JavaScript, 
+and React. I enjoy building user interfaces.
