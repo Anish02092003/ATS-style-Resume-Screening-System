@@ -8,29 +8,20 @@ import pytesseract
 
 from sklearn.metrics.pairwise import cosine_similarity
 
-# -------------------------------
-# Tesseract path (Windows)
-# -------------------------------
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 
-# -------------------------------
-# Load ML artifacts
-# -------------------------------
 model = pickle.load(open("models/resume_model.pkl", "rb"))
 vectorizer = pickle.load(open("models/tfidf_vectorizer.pkl", "rb"))
 
 
-# -------------------------------
-# PDF TEXT EXTRACTION (TEXT + OCR)
-# -------------------------------
 def extract_text_from_pdf(file_stream):
     """
     1. Try normal text extraction
     2. If it fails, fallback to OCR
     """
 
-    # ---- Attempt 1: Text-based PDF ----
+
     try:
         reader = PyPDF2.PdfReader(file_stream)
         text = ""
@@ -48,7 +39,7 @@ def extract_text_from_pdf(file_stream):
     except Exception:
         pass
 
-    # ---- Attempt 2: OCR for scanned PDFs ----
+    
     try:
         images = convert_from_bytes(file_stream.read())
         ocr_text = ""
@@ -65,9 +56,7 @@ def extract_text_from_pdf(file_stream):
         raise ValueError("Unable to extract text from the uploaded PDF")
 
 
-# -------------------------------
-# PREDICTION LOGIC (ATS-CORRECT)
-# -------------------------------
+
 def predict_resume(resume_text, jd_text):
     """
     Returns:
@@ -78,7 +67,7 @@ def predict_resume(resume_text, jd_text):
     processed_resume = preprocess(resume_text)
     processed_jd = preprocess(jd_text)
 
-    # ---------- ATS Match Percentage ----------
+    
     corpus = [processed_jd, processed_resume]
     vectors = vectorizer.transform(corpus)
 
@@ -89,11 +78,11 @@ def predict_resume(resume_text, jd_text):
 
     match_percentage = round(similarity * 100, 2)
 
-    # ---------- HARD THRESHOLD (50%) ----------
+
     if match_percentage < 50:
         return "REJECT ❌", match_percentage
 
-    # ---------- ML Classifier ----------
+
     combined = processed_jd + " " + processed_resume
     combined_vector = vectorizer.transform([combined])
     prediction = model.predict(combined_vector)[0]
@@ -103,9 +92,7 @@ def predict_resume(resume_text, jd_text):
     return decision, match_percentage
 
 
-# -------------------------------
-# LOCAL TEST
-# -------------------------------
+
 if __name__ == "__main__":
 
     resume = """I have experience in Python, machine learning,
@@ -115,3 +102,4 @@ if __name__ == "__main__":
     decision, score = predict_resume(resume, jd)
     print("Decision:", decision)
     print("Match Confidence:", score, "%")
+
